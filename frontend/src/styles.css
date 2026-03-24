@@ -1,0 +1,9 @@
+/* Базовые директивы Tailwind и общие стили приложения. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply text-slate-900 dark:text-slate-100;
+  font-family: Inter, system-ui, sans-serif;
+}

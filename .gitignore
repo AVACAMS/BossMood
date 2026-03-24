@@ -1,0 +1,8 @@
+# Игнорируем зависимости, сборки, локальные env и файлы базы данных.
+node_modules
+dist
+.env
+*.db
+*.sqlite
+*.sqlite3
+backend/data

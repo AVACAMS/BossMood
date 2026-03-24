@@ -1,0 +1,159 @@
+# Описание REST API для backend сервиса Boss Mood Tracker.
+openapi: 3.0.3
+info:
+  title: API трекера настроения руководителя
+  version: 1.0.0
+servers:
+  - url: http://localhost:4000/api
+tags:
+  - name: Авторизация
+  - name: Руководители
+  - name: Записи
+  - name: Аналитика
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    AuthPayload:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+    Boss:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        role: { type: string, nullable: true }
+    Entry:
+      type: object
+      properties:
+        id: { type: integer }
+        boss_id: { type: integer }
+        mood_rating: { type: integer }
+        note: { type: string, nullable: true }
+        observed_at: { type: string, format: date-time }
+paths:
+  /health:
+    get:
+      summary: Проверка состояния API
+      responses:
+        "200":
+          description: сервис работает
+  /auth/register:
+    post:
+      tags: [Авторизация]
+      summary: Регистрация пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AuthPayload" }
+      responses:
+        "201":
+          description: пользователь зарегистрирован
+  /auth/login:
+    post:
+      tags: [Авторизация]
+      summary: Вход пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AuthPayload" }
+      responses:
+        "200":
+          description: вход выполнен
+  /bosses:
+    get:
+      tags: [Руководители]
+      security: [{ bearerAuth: [] }]
+      summary: Получить руководителей текущего пользователя
+      responses:
+        "200":
+          description: список руководителей
+    post:
+      tags: [Руководители]
+      security: [{ bearerAuth: [] }]
+      summary: Создать профиль руководителя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+                role: { type: string }
+      responses:
+        "201":
+          description: профиль создан
+  /entries:
+    get:
+      tags: [Записи]
+      security: [{ bearerAuth: [] }]
+      summary: Получить записи настроения по руководителю
+      parameters:
+        - in: query
+          name: bossId
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: список записей
+    post:
+      tags: [Записи]
+      security: [{ bearerAuth: [] }]
+      summary: Добавить запись о настроении
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [bossId, moodRating, observedAt]
+              properties:
+                bossId: { type: integer }
+                moodRating: { type: integer, minimum: 1, maximum: 5 }
+                observedAt: { type: string, format: date-time }
+                note: { type: string }
+      responses:
+        "201":
+          description: запись создана
+  /analytics/stats:
+    get:
+      tags: [Аналитика]
+      security: [{ bearerAuth: [] }]
+      summary: Получить средние показатели и риски
+      parameters:
+        - in: query
+          name: bossId
+          required: true
+          schema: { type: integer }
+        - in: query
+          name: threshold
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 5 }
+      responses:
+        "200":
+          description: статистика
+  /analytics/prediction:
+    get:
+      tags: [Аналитика]
+      security: [{ bearerAuth: [] }]
+      summary: Прогноз настроения на 7 дней по тренду дней недели
+      parameters:
+        - in: query
+          name: bossId
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: прогноз

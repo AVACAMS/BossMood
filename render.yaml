@@ -15,7 +15,3 @@ services:
         value: ./data/app.db
       - key: FRONTEND_URLS
         sync: false
-    disk:
-      name: boss-mood-tracker-data
-      mountPath: /opt/render/project/src/backend/data
-      sizeGB: 1
